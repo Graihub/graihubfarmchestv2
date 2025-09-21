@@ -1,0 +1,203 @@
+--// Grai Hub Overlay UI + Auto Farm Chest
+
+local player = game.Players.LocalPlayer
+local RunService = game:GetService("RunService")
+
+local gui = Instance.new("ScreenGui")
+gui.Name = "GraiHubOverlay"
+gui.ResetOnSpawn = false
+gui.IgnoreGuiInset = true
+gui.Parent = player:WaitForChild("PlayerGui")
+
+-- Main Frame (ẩn mặc định)
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 400, 0, 200)
+mainFrame.Position = UDim2.new(0.5, -200, 0.1, 0)
+mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+mainFrame.BackgroundTransparency = 0.15
+mainFrame.Visible = false
+mainFrame.Parent = gui
+
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 12)
+corner.Parent = mainFrame
+
+local stroke = Instance.new("UIStroke")
+stroke.Color = Color3.fromRGB(0, 200, 255)
+stroke.Thickness = 2
+stroke.Parent = mainFrame
+
+-- Title "Grai Hub"
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 50)
+title.BackgroundTransparency = 1
+title.Text = "Grai Hub"
+title.TextColor3 = Color3.fromRGB(0, 255, 0)
+title.Font = Enum.Font.Arcade
+title.TextSize = 32
+title.Parent = mainFrame
+
+-- Logo
+local logo = Instance.new("ImageLabel")
+logo.Size = UDim2.new(0, 100, 0, 100)
+logo.Position = UDim2.new(0.5, -50, 0.35, 0)
+logo.BackgroundTransparency = 1
+logo.Image = "rbxassetid://ID_IMAGE" -- thay ID logo thật
+logo.Parent = mainFrame
+
+-- Info Label
+local infoLabel = Instance.new("TextLabel")
+infoLabel.Size = UDim2.new(1, -20, 0, 40)
+infoLabel.Position = UDim2.new(0, 10, 1, -50)
+infoLabel.BackgroundTransparency = 1
+infoLabel.TextColor3 = Color3.new(1, 1, 1)
+infoLabel.TextScaled = true
+infoLabel.Font = Enum.Font.Arcade
+infoLabel.Text = "Loading..."
+infoLabel.Parent = mainFrame
+
+-- Cập nhật thông tin nhân vật
+spawn(function()
+	while task.wait(1) do
+		pcall(function()
+			local level = player.Data.Level.Value
+			local beli = player.Data.Beli.Value
+			local frags = player.Data.Fragments.Value
+			infoLabel.Text = "Lv: " .. level .. " | Beli: " .. beli .. " | Fragments: " .. frags
+		end)
+	end
+end)
+
+-- Nút Open/Close
+local toggleButton = Instance.new("TextButton")
+toggleButton.Size = UDim2.new(0, 120, 0, 40)
+toggleButton.Position = UDim2.new(0, 15, 0, 70)
+toggleButton.BackgroundColor3 = Color3.fromRGB(0, 200, 255)
+toggleButton.BackgroundTransparency = 0.05
+toggleButton.BorderSizePixel = 0
+toggleButton.Text = "Open"
+toggleButton.TextColor3 = Color3.fromRGB(0, 0, 0)
+toggleButton.TextScaled = true
+toggleButton.Font = Enum.Font.Arcade
+toggleButton.Parent = gui
+
+local btnCorner = Instance.new("UICorner")
+btnCorner.CornerRadius = UDim.new(0, 10)
+btnCorner.Parent = toggleButton
+
+local isOpen = false
+toggleButton.MouseButton1Click:Connect(function()
+	isOpen = not isOpen
+	mainFrame.Visible = isOpen
+	toggleButton.Text = isOpen and "Close" or "Open"
+end)
+
+-- FPS + Ping hiển thị góc trên phải
+local statsLabel = Instance.new("TextLabel", gui)
+statsLabel.Size = UDim2.new(0, 200, 0, 40)
+statsLabel.Position = UDim2.new(1, -210, 0, 20)
+statsLabel.BackgroundTransparency = 0.2
+statsLabel.BackgroundColor3 = Color3.fromRGB(25,25,25)
+statsLabel.TextColor3 = Color3.fromRGB(0,255,0)
+statsLabel.Font = Enum.Font.Arcade
+statsLabel.TextSize = 18
+statsLabel.Text = "FPS: 0 | Ping: 0"
+
+local statsCorner = Instance.new("UICorner")
+statsCorner.CornerRadius = UDim.new(0, 10)
+statsCorner.Parent = statsLabel
+
+RunService.RenderStepped:Connect(function(dt)
+	local fps = math.floor(1/dt)
+	local ping = game:GetService("Stats").Network.ServerStatsItem["Data Ping"]:GetValueString()
+	statsLabel.Text = "FPS: "..fps.." | Ping: "..ping
+end)
+
+--------------------------------------------------------
+-- Auto Farm Chest + Auto chọn Marines
+--------------------------------------------------------
+
+local LocalPlayer = game:GetService("Players").LocalPlayer
+
+local function getCharacter()
+	if not LocalPlayer.Character then
+		LocalPlayer.CharacterAdded:Wait()
+	end
+	LocalPlayer.Character:WaitForChild("HumanoidRootPart")
+	return LocalPlayer.Character
+end
+
+local function DistanceFromPlrSort(ObjectList: table)
+	local RootPart = getCharacter().LowerTorso
+	table.sort(ObjectList, function(ChestA, ChestB)
+		local RootPos = RootPart.Position
+		local DistanceA = (RootPos - ChestA.Position).Magnitude
+		local DistanceB = (RootPos - ChestB.Position).Magnitude
+		return DistanceA < DistanceB
+	end)
+end
+
+local UncheckedChests, FirstRun = {}, true
+local function getChestsSorted()
+	if FirstRun then
+		FirstRun = false
+		for _, Object in pairs(game:GetDescendants()) do
+			if Object.Name:find("Chest") and Object.ClassName == "Part" then
+				table.insert(UncheckedChests, Object)
+			end
+		end
+	end
+	local Chests = {}
+	for _, Chest in pairs(UncheckedChests) do
+		if Chest:FindFirstChild("TouchInterest") then
+			table.insert(Chests, Chest)
+		end
+	end
+	DistanceFromPlrSort(Chests)
+	return Chests
+end
+
+local function toggleNoclip(Toggle: boolean)
+	for _, v in pairs(getCharacter():GetChildren()) do
+		if v:IsA("BasePart") then
+			v.CanCollide = not Toggle
+		end
+	end
+end
+
+local function Teleport(Goal: CFrame)
+	local RootPart = getCharacter().HumanoidRootPart
+	toggleNoclip(true)
+	RootPart.CFrame = Goal + Vector3.new(0, 3, 0)
+	toggleNoclip(false)
+end
+
+local function startFarm()
+	task.spawn(function()
+		while task.wait() do
+			local Chests = getChestsSorted()
+			if #Chests > 0 then
+				Teleport(Chests[1].CFrame)
+			end
+		end
+	end)
+end
+
+-- Auto chọn Marines
+task.spawn(function()
+	local rs = game:GetService("ReplicatedStorage")
+	while task.wait(5) do
+		pcall(function()
+			rs.Remotes.CommF_:InvokeServer("SetTeam","Marines")
+		end)
+	end
+end)
+
+LocalPlayer.CharacterAdded:Connect(function()
+	task.wait(1) 
+	startFarm()
+end)
+
+startFarm()
+
+print("✅ Grai Hub Loaded with Auto Farm Chest + Marines")
