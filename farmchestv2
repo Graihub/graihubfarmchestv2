@@ -42,7 +42,7 @@ local logo = Instance.new("ImageLabel")
 logo.Size = UDim2.new(0, 100, 0, 100)
 logo.Position = UDim2.new(0.5, -50, 0.35, 0)
 logo.BackgroundTransparency = 1
-logo.Image = "rbxassetid://ID_IMAGE" -- thay ID logo thật
+logo.Image = "rbxassetid://133835513968402"
 logo.Parent = mainFrame
 
 -- Info Label
