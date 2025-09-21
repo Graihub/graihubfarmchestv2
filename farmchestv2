@@ -1,8 +1,9 @@
---// Grai Hub Fluent Full (UI + Farm + Marines + Hop)
+--// Grai Hub Full (UI Fade + Farm + Marines + Hop)
 
 -- 📌 Services
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TeleportService = game:GetService("TeleportService")
 local HttpService = game:GetService("HttpService")
@@ -21,19 +22,22 @@ else
     end
 end
 
--- 📌 UI Grai Hub
+--------------------------------------------------------
+-- 📌 UI Fade In/Out
+--------------------------------------------------------
+
 local gui = Instance.new("ScreenGui")
 gui.Name = "GraiHubUI"
 gui.ResetOnSpawn = false
 gui.IgnoreGuiInset = true
 gui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
--- Main Frame
 local mainFrame = Instance.new("Frame", gui)
 mainFrame.Size = UDim2.new(0, 420, 0, 200)
-mainFrame.Position = UDim2.new(0.5, -210, 0.2, 0)
+mainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+mainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
 mainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-mainFrame.BackgroundTransparency = 0.1
+mainFrame.BackgroundTransparency = 1
 mainFrame.Visible = false
 
 Instance.new("UICorner", mainFrame).CornerRadius = UDim.new(0, 14)
@@ -41,17 +45,8 @@ local stroke = Instance.new("UIStroke", mainFrame)
 stroke.Color = Color3.fromRGB(0, 170, 255)
 stroke.Thickness = 2
 
--- Gradient
-local gradient = Instance.new("UIGradient", mainFrame)
-gradient.Color = ColorSequence.new{
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(30,30,30)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(50,50,50))
-}
-gradient.Rotation = 45
-
--- Title
 local title = Instance.new("TextLabel", mainFrame)
-title.Size = UDim2.new(1, -20, 0, 50)
+title.Size = UDim2.new(1, -20, 0, 40)
 title.Position = UDim2.new(0, 10, 0, 5)
 title.BackgroundTransparency = 1
 title.Text = "⚡ Grai Hub"
@@ -60,28 +55,24 @@ title.Font = Enum.Font.GothamBold
 title.TextSize = 28
 title.TextXAlignment = Enum.TextXAlignment.Left
 
--- Info Player
 local infoLabel = Instance.new("TextLabel", mainFrame)
 infoLabel.Size = UDim2.new(1, -20, 0, 40)
-infoLabel.Position = UDim2.new(0, 10, 0, 70)
+infoLabel.Position = UDim2.new(0, 10, 0, 60)
 infoLabel.BackgroundTransparency = 1
 infoLabel.TextColor3 = Color3.fromRGB(255,255,255)
 infoLabel.TextScaled = true
 infoLabel.Font = Enum.Font.Gotham
 infoLabel.Text = "Loading..."
 
-spawn(function()
-	while task.wait(1) do
-		pcall(function()
-			local level = LocalPlayer.Data.Level.Value
-			local beli = LocalPlayer.Data.Beli.Value
-			local frags = LocalPlayer.Data.Fragments.Value
-			infoLabel.Text = "Lv: " .. level .. " | Beli: " .. beli .. " | Frags: " .. frags
-		end)
-	end
-end)
+local statsLabel = Instance.new("TextLabel", mainFrame)
+statsLabel.Size = UDim2.new(1, -20, 0, 40)
+statsLabel.Position = UDim2.new(0, 10, 0, 110)
+statsLabel.BackgroundTransparency = 1
+statsLabel.TextColor3 = Color3.fromRGB(0,255,0)
+statsLabel.Font = Enum.Font.GothamBold
+statsLabel.TextSize = 20
+statsLabel.Text = "FPS: 0 | Ping: 0"
 
--- Toggle Button
 local toggleButton = Instance.new("TextButton", gui)
 toggleButton.Size = UDim2.new(0, 120, 0, 40)
 toggleButton.Position = UDim2.new(0, 20, 0, 100)
@@ -95,22 +86,38 @@ Instance.new("UICorner", toggleButton).CornerRadius = UDim.new(0, 10)
 local isOpen = false
 toggleButton.MouseButton1Click:Connect(function()
 	isOpen = not isOpen
-	mainFrame.Visible = isOpen
-	toggleButton.Text = isOpen and "Close" or "Open"
+	if isOpen then
+		mainFrame.Visible = true
+		mainFrame.Position = UDim2.new(0.5, 0, 0.55, 0)
+		mainFrame.BackgroundTransparency = 1
+		TweenService:Create(mainFrame, TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+			Position = UDim2.new(0.5, 0, 0.5, 0),
+			BackgroundTransparency = 0.1
+		}):Play()
+		toggleButton.Text = "Close"
+	else
+		local tween = TweenService:Create(mainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+			Position = UDim2.new(0.5, 0, 0.55, 0),
+			BackgroundTransparency = 1
+		})
+		tween:Play()
+		tween.Completed:Wait()
+		mainFrame.Visible = false
+		toggleButton.Text = "Open"
+	end
 end)
 
--- FPS + Ping
-local statsLabel = Instance.new("TextLabel", gui)
-statsLabel.Size = UDim2.new(0, 220, 0, 40)
-statsLabel.Position = UDim2.new(1, -230, 0, 20)
-statsLabel.BackgroundTransparency = 0.15
-statsLabel.BackgroundColor3 = Color3.fromRGB(25,25,25)
-statsLabel.TextColor3 = Color3.fromRGB(0,255,0)
-statsLabel.Font = Enum.Font.GothamBold
-statsLabel.TextSize = 18
-statsLabel.Text = "FPS: 0 | Ping: 0"
-
-Instance.new("UICorner", statsLabel).CornerRadius = UDim.new(0, 10)
+-- Update Info + FPS
+spawn(function()
+	while task.wait(1) do
+		pcall(function()
+			local level = LocalPlayer.Data.Level.Value
+			local beli = LocalPlayer.Data.Beli.Value
+			local frags = LocalPlayer.Data.Fragments.Value
+			infoLabel.Text = "Lv: " .. level .. " | Beli: " .. beli .. " | Frags: " .. frags
+		end)
+	end
+end)
 
 RunService.RenderStepped:Connect(function(dt)
 	local fps = math.floor(1/dt)
@@ -119,7 +126,7 @@ RunService.RenderStepped:Connect(function(dt)
 end)
 
 --------------------------------------------------------
--- Auto Farm Chest + Auto Marines
+-- 📌 Auto Farm Chest + Marines
 --------------------------------------------------------
 
 local function getCharacter()
@@ -130,7 +137,7 @@ local function getCharacter()
 	return LocalPlayer.Character
 end
 
-local function DistanceFromPlrSort(ObjectList: table)
+local function DistanceFromPlrSort(ObjectList)
 	local RootPart = getCharacter().LowerTorso
 	table.sort(ObjectList, function(A,B)
 		return (RootPart.Position - A.Position).Magnitude < (RootPart.Position - B.Position).Magnitude
@@ -157,7 +164,7 @@ local function getChestsSorted()
 	return Chests
 end
 
-local function toggleNoclip(Toggle: boolean)
+local function toggleNoclip(Toggle)
 	for _, v in pairs(getCharacter():GetChildren()) do
 		if v:IsA("BasePart") then
 			v.CanCollide = not Toggle
@@ -165,7 +172,7 @@ local function toggleNoclip(Toggle: boolean)
 	end
 end
 
-local function Teleport(Goal: CFrame)
+local function Teleport(Goal)
 	local RootPart = getCharacter().HumanoidRootPart
 	toggleNoclip(true)
 	RootPart.CFrame = Goal + Vector3.new(0, 3, 0)
@@ -246,4 +253,4 @@ Players.LocalPlayer.OnTeleport:Connect(function(State)
     end
 end)
 
-print("✅ Grai Hub Fluent Full Loaded")
+print("✅ Grai Hub Full Loaded (UI Fade + Farm + Hop)")
