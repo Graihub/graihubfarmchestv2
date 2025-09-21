@@ -1,105 +1,89 @@
---// Grai Hub Full Script
+--// Grai Hub Full Script (No Logo)
 
-local player = game.Players.LocalPlayer
+-- 📌 Services
+local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TeleportService = game:GetService("TeleportService")
+local HttpService = game:GetService("HttpService")
+local LocalPlayer = Players.LocalPlayer
+local PlaceID = game.PlaceId
 
+-- 📌 Data lưu server đã đi
+local AllIDs = {}
+local foundAnything = ""
+
+if isfile and isfile("NotSameServers.json") then
+    AllIDs = HttpService:JSONDecode(readfile("NotSameServers.json"))
+else
+    if writefile then
+        writefile("NotSameServers.json", HttpService:JSONEncode(AllIDs))
+    end
+end
+
+-- 📌 UI Grai Hub
 local gui = Instance.new("ScreenGui")
 gui.Name = "GraiHubOverlay"
 gui.ResetOnSpawn = false
 gui.IgnoreGuiInset = true
-gui.Parent = player:WaitForChild("PlayerGui")
+gui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
--- Main Frame (ẩn mặc định)
+-- Main Frame
 local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 400, 0, 220)
+mainFrame.Size = UDim2.new(0, 400, 0, 160)
 mainFrame.Position = UDim2.new(0.5, -200, 0.1, 0)
 mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 mainFrame.BackgroundTransparency = 0.15
 mainFrame.Visible = false
 mainFrame.Parent = gui
 
-local corner = Instance.new("UICorner")
+local corner = Instance.new("UICorner", mainFrame)
 corner.CornerRadius = UDim.new(0, 12)
-corner.Parent = mainFrame
 
-local stroke = Instance.new("UIStroke")
+local stroke = Instance.new("UIStroke", mainFrame)
 stroke.Color = Color3.fromRGB(0, 200, 255)
 stroke.Thickness = 2
-stroke.Parent = mainFrame
 
 -- Title
-local title = Instance.new("TextLabel")
+local title = Instance.new("TextLabel", mainFrame)
 title.Size = UDim2.new(1, 0, 0, 50)
 title.BackgroundTransparency = 1
 title.Text = "🌈 Grai Hub"
 title.TextColor3 = Color3.fromRGB(0, 255, 0)
 title.Font = Enum.Font.Arcade
 title.TextSize = 32
-title.Parent = mainFrame
 
--- Avatar (tròn + viền cầu vồng)
-local logo = Instance.new("ImageLabel")
-logo.Size = UDim2.new(0, 100, 0, 100)
-logo.Position = UDim2.new(0.5, -50, 0.3, 0)
-logo.BackgroundTransparency = 1
-logo.Image = "rbxassetid://133835513968402"
-logo.Parent = mainFrame
-
-local logoCorner = Instance.new("UICorner")
-logoCorner.CornerRadius = UDim.new(1, 0)
-logoCorner.Parent = logo
-
-local logoStroke = Instance.new("UIStroke")
-logoStroke.Thickness = 3
-logoStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-logoStroke.Parent = logo
-
--- Rainbow effect
-local t = 0
-RunService.RenderStepped:Connect(function(dt)
-	t = t + dt
-	logoStroke.Color = Color3.fromHSV((t/3)%1, 1, 1)
-end)
-
--- Info Player
-local infoLabel = Instance.new("TextLabel")
+-- Info player
+local infoLabel = Instance.new("TextLabel", mainFrame)
 infoLabel.Size = UDim2.new(1, -20, 0, 40)
-infoLabel.Position = UDim2.new(0, 10, 1, -50)
+infoLabel.Position = UDim2.new(0, 10, 0, 70)
 infoLabel.BackgroundTransparency = 1
 infoLabel.TextColor3 = Color3.new(1, 1, 1)
 infoLabel.TextScaled = true
 infoLabel.Font = Enum.Font.Arcade
 infoLabel.Text = "Loading..."
-infoLabel.Parent = mainFrame
 
--- Cập nhật thông tin
 spawn(function()
 	while task.wait(1) do
 		pcall(function()
-			local level = player.Data.Level.Value
-			local beli = player.Data.Beli.Value
-			local frags = player.Data.Fragments.Value
-			infoLabel.Text = "Lv: " .. level .. " | Beli: " .. beli .. " | Fragments: " .. frags
+			local level = LocalPlayer.Data.Level.Value
+			local beli = LocalPlayer.Data.Beli.Value
+			local frags = LocalPlayer.Data.Fragments.Value
+			infoLabel.Text = "Lv: " .. level .. " | Beli: " .. beli .. " | Frags: " .. frags
 		end)
 	end
 end)
 
--- Open/Close Button
-local toggleButton = Instance.new("TextButton")
+-- Nút Open/Close
+local toggleButton = Instance.new("TextButton", gui)
 toggleButton.Size = UDim2.new(0, 120, 0, 40)
 toggleButton.Position = UDim2.new(0, 15, 0, 70)
 toggleButton.BackgroundColor3 = Color3.fromRGB(0, 200, 255)
-toggleButton.BackgroundTransparency = 0.05
-toggleButton.BorderSizePixel = 0
 toggleButton.Text = "Open"
 toggleButton.TextColor3 = Color3.fromRGB(0, 0, 0)
 toggleButton.TextScaled = true
 toggleButton.Font = Enum.Font.Arcade
-toggleButton.Parent = gui
-
-local btnCorner = Instance.new("UICorner")
-btnCorner.CornerRadius = UDim.new(0, 10)
-btnCorner.Parent = toggleButton
+Instance.new("UICorner", toggleButton).CornerRadius = UDim.new(0, 10)
 
 local isOpen = false
 toggleButton.MouseButton1Click:Connect(function()
@@ -108,7 +92,7 @@ toggleButton.MouseButton1Click:Connect(function()
 	toggleButton.Text = isOpen and "Close" or "Open"
 end)
 
--- FPS + Ping góc trên phải
+-- FPS + Ping
 local statsLabel = Instance.new("TextLabel", gui)
 statsLabel.Size = UDim2.new(0, 200, 0, 40)
 statsLabel.Position = UDim2.new(1, -210, 0, 20)
@@ -118,10 +102,7 @@ statsLabel.TextColor3 = Color3.fromRGB(0,255,0)
 statsLabel.Font = Enum.Font.Arcade
 statsLabel.TextSize = 18
 statsLabel.Text = "FPS: 0 | Ping: 0"
-
-local statsCorner = Instance.new("UICorner")
-statsCorner.CornerRadius = UDim.new(0, 10)
-statsCorner.Parent = statsLabel
+Instance.new("UICorner", statsLabel).CornerRadius = UDim.new(0, 10)
 
 RunService.RenderStepped:Connect(function(dt)
 	local fps = math.floor(1/dt)
@@ -132,8 +113,6 @@ end)
 --------------------------------------------------------
 -- Auto Farm Chest + Auto chọn Marines
 --------------------------------------------------------
-
-local LocalPlayer = game:GetService("Players").LocalPlayer
 
 local function getCharacter()
 	if not LocalPlayer.Character then
@@ -146,10 +125,7 @@ end
 local function DistanceFromPlrSort(ObjectList: table)
 	local RootPart = getCharacter().LowerTorso
 	table.sort(ObjectList, function(ChestA, ChestB)
-		local RootPos = RootPart.Position
-		local DistanceA = (RootPos - ChestA.Position).Magnitude
-		local DistanceB = (RootPos - ChestB.Position).Magnitude
-		return DistanceA < DistanceB
+		return (RootPart.Position - ChestA.Position).Magnitude < (RootPart.Position - ChestB.Position).Magnitude
 	end)
 end
 
@@ -201,10 +177,9 @@ end
 
 -- Auto chọn Marines
 task.spawn(function()
-	local rs = game:GetService("ReplicatedStorage")
 	while task.wait(5) do
 		pcall(function()
-			rs.Remotes.CommF_:InvokeServer("SetTeam","Marines")
+			ReplicatedStorage.Remotes.CommF_:InvokeServer("SetTeam","Marines")
 		end)
 	end
 end)
@@ -213,7 +188,54 @@ LocalPlayer.CharacterAdded:Connect(function()
 	task.wait(1) 
 	startFarm()
 end)
-
 startFarm()
 
-print("✅ Grai Hub Full Loaded (UI + Rainbow Avatar + Farm)")
+--------------------------------------------------------
+-- 📌 Server Hop mỗi 60s
+--------------------------------------------------------
+
+local function Rejoin()
+    pcall(function()
+        TeleportService:Teleport(PlaceID, LocalPlayer)
+    end)
+end
+
+local function TPReturner()
+    local site
+    if foundAnything == "" then
+        site = HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/"..PlaceID.."/servers/Public?sortOrder=Asc&limit=100"))
+    else
+        site = HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/"..PlaceID.."/servers/Public?sortOrder=Asc&limit=100&cursor="..foundAnything))
+    end
+    if site.nextPageCursor then
+        foundAnything = site.nextPageCursor
+    end
+    for _,v in pairs(site.data) do
+        if v.playing < v.maxPlayers then
+            local id = tostring(v.id)
+            if not table.find(AllIDs,id) then
+                table.insert(AllIDs,id)
+                if writefile then
+                    writefile("NotSameServers.json", HttpService:JSONEncode(AllIDs))
+                end
+                TeleportService:TeleportToPlaceInstance(PlaceID, id, LocalPlayer)
+                task.wait(4)
+            end
+        end
+    end
+    Rejoin()
+end
+
+task.spawn(function()
+    while task.wait(60) do -- chỉnh số giây hop ở đây
+        pcall(TPReturner)
+    end
+end)
+
+Players.LocalPlayer.OnTeleport:Connect(function(State)
+    if State == Enum.TeleportState.Failed then
+        Rejoin()
+    end
+end)
+
+print("✅ Grai Hub Full Loaded (No Logo + Farm + Marines + Hop 60s)")
