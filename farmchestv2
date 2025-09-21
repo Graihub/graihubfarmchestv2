@@ -1,4 +1,4 @@
---// Grai Hub Overlay UI + Auto Farm Chest
+--// Grai Hub Full Script
 
 local player = game.Players.LocalPlayer
 local RunService = game:GetService("RunService")
@@ -11,7 +11,7 @@ gui.Parent = player:WaitForChild("PlayerGui")
 
 -- Main Frame (ẩn mặc định)
 local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 400, 0, 200)
+mainFrame.Size = UDim2.new(0, 400, 0, 220)
 mainFrame.Position = UDim2.new(0.5, -200, 0.1, 0)
 mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 mainFrame.BackgroundTransparency = 0.15
@@ -27,25 +27,41 @@ stroke.Color = Color3.fromRGB(0, 200, 255)
 stroke.Thickness = 2
 stroke.Parent = mainFrame
 
--- Title "Grai Hub"
+-- Title
 local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1, 0, 0, 50)
 title.BackgroundTransparency = 1
-title.Text = "Grai Hub"
+title.Text = "🌈 Grai Hub"
 title.TextColor3 = Color3.fromRGB(0, 255, 0)
 title.Font = Enum.Font.Arcade
 title.TextSize = 32
 title.Parent = mainFrame
 
--- Logo
+-- Avatar (tròn + viền cầu vồng)
 local logo = Instance.new("ImageLabel")
 logo.Size = UDim2.new(0, 100, 0, 100)
-logo.Position = UDim2.new(0.5, -50, 0.35, 0)
+logo.Position = UDim2.new(0.5, -50, 0.3, 0)
 logo.BackgroundTransparency = 1
 logo.Image = "rbxassetid://133835513968402"
 logo.Parent = mainFrame
 
--- Info Label
+local logoCorner = Instance.new("UICorner")
+logoCorner.CornerRadius = UDim.new(1, 0)
+logoCorner.Parent = logo
+
+local logoStroke = Instance.new("UIStroke")
+logoStroke.Thickness = 3
+logoStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+logoStroke.Parent = logo
+
+-- Rainbow effect
+local t = 0
+RunService.RenderStepped:Connect(function(dt)
+	t = t + dt
+	logoStroke.Color = Color3.fromHSV((t/3)%1, 1, 1)
+end)
+
+-- Info Player
 local infoLabel = Instance.new("TextLabel")
 infoLabel.Size = UDim2.new(1, -20, 0, 40)
 infoLabel.Position = UDim2.new(0, 10, 1, -50)
@@ -56,7 +72,7 @@ infoLabel.Font = Enum.Font.Arcade
 infoLabel.Text = "Loading..."
 infoLabel.Parent = mainFrame
 
--- Cập nhật thông tin nhân vật
+-- Cập nhật thông tin
 spawn(function()
 	while task.wait(1) do
 		pcall(function()
@@ -68,7 +84,7 @@ spawn(function()
 	end
 end)
 
--- Nút Open/Close
+-- Open/Close Button
 local toggleButton = Instance.new("TextButton")
 toggleButton.Size = UDim2.new(0, 120, 0, 40)
 toggleButton.Position = UDim2.new(0, 15, 0, 70)
@@ -92,7 +108,7 @@ toggleButton.MouseButton1Click:Connect(function()
 	toggleButton.Text = isOpen and "Close" or "Open"
 end)
 
--- FPS + Ping hiển thị góc trên phải
+-- FPS + Ping góc trên phải
 local statsLabel = Instance.new("TextLabel", gui)
 statsLabel.Size = UDim2.new(0, 200, 0, 40)
 statsLabel.Position = UDim2.new(1, -210, 0, 20)
@@ -200,4 +216,4 @@ end)
 
 startFarm()
 
-print("✅ Grai Hub Loaded with Auto Farm Chest + Marines")
+print("✅ Grai Hub Full Loaded (UI + Rainbow Avatar + Farm)")
