@@ -1,6 +1,5 @@
---// Grai Hub Full (UI Fade + Farm + Marines + Hop)
+--// Grai Hub Full (UI Fade + Farm + Hop + Font Mine)
 
--- 📌 Services
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
@@ -23,7 +22,7 @@ else
 end
 
 --------------------------------------------------------
--- 📌 UI Fade In/Out
+-- 📌 UI Fade In/Out (Font Mine)
 --------------------------------------------------------
 
 local gui = Instance.new("ScreenGui")
@@ -50,8 +49,8 @@ title.Size = UDim2.new(1, -20, 0, 40)
 title.Position = UDim2.new(0, 10, 0, 5)
 title.BackgroundTransparency = 1
 title.Text = "⚡ Grai Hub"
-title.TextColor3 = Color3.fromRGB(0, 200, 255)
-title.Font = Enum.Font.GothamBold
+title.TextColor3 = Color3.fromRGB(0, 255, 0)
+title.Font = Enum.Font.Arcade -- font Mine style
 title.TextSize = 28
 title.TextXAlignment = Enum.TextXAlignment.Left
 
@@ -61,7 +60,7 @@ infoLabel.Position = UDim2.new(0, 10, 0, 60)
 infoLabel.BackgroundTransparency = 1
 infoLabel.TextColor3 = Color3.fromRGB(255,255,255)
 infoLabel.TextScaled = true
-infoLabel.Font = Enum.Font.Gotham
+infoLabel.Font = Enum.Font.Arcade -- font Mine style
 infoLabel.Text = "Loading..."
 
 local statsLabel = Instance.new("TextLabel", mainFrame)
@@ -69,18 +68,18 @@ statsLabel.Size = UDim2.new(1, -20, 0, 40)
 statsLabel.Position = UDim2.new(0, 10, 0, 110)
 statsLabel.BackgroundTransparency = 1
 statsLabel.TextColor3 = Color3.fromRGB(0,255,0)
-statsLabel.Font = Enum.Font.GothamBold
+statsLabel.Font = Enum.Font.Arcade -- font Mine style
 statsLabel.TextSize = 20
 statsLabel.Text = "FPS: 0 | Ping: 0"
 
 local toggleButton = Instance.new("TextButton", gui)
 toggleButton.Size = UDim2.new(0, 120, 0, 40)
 toggleButton.Position = UDim2.new(0, 20, 0, 100)
-toggleButton.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+toggleButton.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
 toggleButton.Text = "Open"
-toggleButton.TextColor3 = Color3.fromRGB(255,255,255)
+toggleButton.TextColor3 = Color3.fromRGB(0,0,0)
 toggleButton.TextScaled = true
-toggleButton.Font = Enum.Font.GothamBold
+toggleButton.Font = Enum.Font.Arcade -- font Mine style
 Instance.new("UICorner", toggleButton).CornerRadius = UDim.new(0, 10)
 
 local isOpen = false
@@ -253,4 +252,4 @@ Players.LocalPlayer.OnTeleport:Connect(function(State)
     end
 end)
 
-print("✅ Grai Hub Full Loaded (UI Fade + Farm + Hop)")
+print("✅ Grai Hub Full Loaded (Font Mine)")
