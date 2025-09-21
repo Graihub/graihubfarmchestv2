@@ -1,4 +1,4 @@
---// Grai Hub Full Script (No Logo)
+--// Grai Hub Fluent Full (UI + Farm + Marines + Hop)
 
 -- 📌 Services
 local Players = game:GetService("Players")
@@ -9,7 +9,7 @@ local HttpService = game:GetService("HttpService")
 local LocalPlayer = Players.LocalPlayer
 local PlaceID = game.PlaceId
 
--- 📌 Data lưu server đã đi
+-- 📌 Data lưu server hop
 local AllIDs = {}
 local foundAnything = ""
 
@@ -23,44 +23,51 @@ end
 
 -- 📌 UI Grai Hub
 local gui = Instance.new("ScreenGui")
-gui.Name = "GraiHubOverlay"
+gui.Name = "GraiHubUI"
 gui.ResetOnSpawn = false
 gui.IgnoreGuiInset = true
 gui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
 -- Main Frame
-local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 400, 0, 160)
-mainFrame.Position = UDim2.new(0.5, -200, 0.1, 0)
-mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-mainFrame.BackgroundTransparency = 0.15
+local mainFrame = Instance.new("Frame", gui)
+mainFrame.Size = UDim2.new(0, 420, 0, 200)
+mainFrame.Position = UDim2.new(0.5, -210, 0.2, 0)
+mainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+mainFrame.BackgroundTransparency = 0.1
 mainFrame.Visible = false
-mainFrame.Parent = gui
 
-local corner = Instance.new("UICorner", mainFrame)
-corner.CornerRadius = UDim.new(0, 12)
-
+Instance.new("UICorner", mainFrame).CornerRadius = UDim.new(0, 14)
 local stroke = Instance.new("UIStroke", mainFrame)
-stroke.Color = Color3.fromRGB(0, 200, 255)
+stroke.Color = Color3.fromRGB(0, 170, 255)
 stroke.Thickness = 2
+
+-- Gradient
+local gradient = Instance.new("UIGradient", mainFrame)
+gradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(30,30,30)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(50,50,50))
+}
+gradient.Rotation = 45
 
 -- Title
 local title = Instance.new("TextLabel", mainFrame)
-title.Size = UDim2.new(1, 0, 0, 50)
+title.Size = UDim2.new(1, -20, 0, 50)
+title.Position = UDim2.new(0, 10, 0, 5)
 title.BackgroundTransparency = 1
-title.Text = "🌈 Grai Hub"
-title.TextColor3 = Color3.fromRGB(0, 255, 0)
-title.Font = Enum.Font.Arcade
-title.TextSize = 32
+title.Text = "⚡ Grai Hub"
+title.TextColor3 = Color3.fromRGB(0, 200, 255)
+title.Font = Enum.Font.GothamBold
+title.TextSize = 28
+title.TextXAlignment = Enum.TextXAlignment.Left
 
--- Info player
+-- Info Player
 local infoLabel = Instance.new("TextLabel", mainFrame)
 infoLabel.Size = UDim2.new(1, -20, 0, 40)
 infoLabel.Position = UDim2.new(0, 10, 0, 70)
 infoLabel.BackgroundTransparency = 1
-infoLabel.TextColor3 = Color3.new(1, 1, 1)
+infoLabel.TextColor3 = Color3.fromRGB(255,255,255)
 infoLabel.TextScaled = true
-infoLabel.Font = Enum.Font.Arcade
+infoLabel.Font = Enum.Font.Gotham
 infoLabel.Text = "Loading..."
 
 spawn(function()
@@ -74,15 +81,15 @@ spawn(function()
 	end
 end)
 
--- Nút Open/Close
+-- Toggle Button
 local toggleButton = Instance.new("TextButton", gui)
 toggleButton.Size = UDim2.new(0, 120, 0, 40)
-toggleButton.Position = UDim2.new(0, 15, 0, 70)
-toggleButton.BackgroundColor3 = Color3.fromRGB(0, 200, 255)
+toggleButton.Position = UDim2.new(0, 20, 0, 100)
+toggleButton.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
 toggleButton.Text = "Open"
-toggleButton.TextColor3 = Color3.fromRGB(0, 0, 0)
+toggleButton.TextColor3 = Color3.fromRGB(255,255,255)
 toggleButton.TextScaled = true
-toggleButton.Font = Enum.Font.Arcade
+toggleButton.Font = Enum.Font.GothamBold
 Instance.new("UICorner", toggleButton).CornerRadius = UDim.new(0, 10)
 
 local isOpen = false
@@ -94,14 +101,15 @@ end)
 
 -- FPS + Ping
 local statsLabel = Instance.new("TextLabel", gui)
-statsLabel.Size = UDim2.new(0, 200, 0, 40)
-statsLabel.Position = UDim2.new(1, -210, 0, 20)
-statsLabel.BackgroundTransparency = 0.2
+statsLabel.Size = UDim2.new(0, 220, 0, 40)
+statsLabel.Position = UDim2.new(1, -230, 0, 20)
+statsLabel.BackgroundTransparency = 0.15
 statsLabel.BackgroundColor3 = Color3.fromRGB(25,25,25)
 statsLabel.TextColor3 = Color3.fromRGB(0,255,0)
-statsLabel.Font = Enum.Font.Arcade
+statsLabel.Font = Enum.Font.GothamBold
 statsLabel.TextSize = 18
 statsLabel.Text = "FPS: 0 | Ping: 0"
+
 Instance.new("UICorner", statsLabel).CornerRadius = UDim.new(0, 10)
 
 RunService.RenderStepped:Connect(function(dt)
@@ -111,7 +119,7 @@ RunService.RenderStepped:Connect(function(dt)
 end)
 
 --------------------------------------------------------
--- Auto Farm Chest + Auto chọn Marines
+-- Auto Farm Chest + Auto Marines
 --------------------------------------------------------
 
 local function getCharacter()
@@ -124,8 +132,8 @@ end
 
 local function DistanceFromPlrSort(ObjectList: table)
 	local RootPart = getCharacter().LowerTorso
-	table.sort(ObjectList, function(ChestA, ChestB)
-		return (RootPart.Position - ChestA.Position).Magnitude < (RootPart.Position - ChestB.Position).Magnitude
+	table.sort(ObjectList, function(A,B)
+		return (RootPart.Position - A.Position).Magnitude < (RootPart.Position - B.Position).Magnitude
 	end)
 end
 
@@ -185,7 +193,7 @@ task.spawn(function()
 end)
 
 LocalPlayer.CharacterAdded:Connect(function()
-	task.wait(1) 
+	task.wait(1)
 	startFarm()
 end)
 startFarm()
@@ -238,4 +246,4 @@ Players.LocalPlayer.OnTeleport:Connect(function(State)
     end
 end)
 
-print("✅ Grai Hub Full Loaded (No Logo + Farm + Marines + Hop 60s)")
+print("✅ Grai Hub Fluent Full Loaded")
